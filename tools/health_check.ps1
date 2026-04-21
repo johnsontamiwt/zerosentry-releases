@@ -69,15 +69,18 @@ function Send-TelegramAlert($msg) {
         return
     }
     try {
-        $body = @{
+        $bodyJson  = @{
             chat_id    = $chatId
             text       = $msg
             parse_mode = 'Markdown'
         } | ConvertTo-Json -Compress
+        # Force UTF-8 — PowerShell 5.x Invoke-RestMethod defaults to latin-1 for string bodies,
+        # which mangles emoji and non-ASCII. Converting to bytes preserves UTF-8.
+        $bodyBytes = [System.Text.Encoding]::UTF8.GetBytes($bodyJson)
         Invoke-RestMethod `
             -Uri "https://api.telegram.org/bot$token/sendMessage" `
             -Method Post `
-            -Body $body `
+            -Body $bodyBytes `
             -ContentType 'application/json; charset=utf-8' `
             -TimeoutSec 10 | Out-Null
     } catch {

@@ -56,8 +56,9 @@ Write-Host "Telegram env vars: OK" -ForegroundColor Green
 # --- Send test Telegram message ---
 Write-Host "Sending test Telegram message..." -ForegroundColor Cyan
 try {
-    $body = @{ chat_id = $chatId; text = "✅ ZeroMaster watchdog installer: Telegram OK on $env:COMPUTERNAME" } | ConvertTo-Json -Compress
-    $null = Invoke-RestMethod -Uri "https://api.telegram.org/bot$token/sendMessage" -Method Post -Body $body -ContentType 'application/json; charset=utf-8' -TimeoutSec 10
+    $body      = @{ chat_id = $chatId; text = "[OK] ZeroMaster watchdog installer: Telegram reachable on $env:COMPUTERNAME" } | ConvertTo-Json -Compress
+    $bodyBytes = [System.Text.Encoding]::UTF8.GetBytes($body)
+    $null = Invoke-RestMethod -Uri "https://api.telegram.org/bot$token/sendMessage" -Method Post -Body $bodyBytes -ContentType 'application/json; charset=utf-8' -TimeoutSec 10
     Write-Host "  Test message sent. Check your Telegram." -ForegroundColor Green
 } catch {
     Write-Host "  Test message FAILED: $_" -ForegroundColor Red
@@ -84,28 +85,34 @@ if (-not (Test-Path $batPath)) {
 $taskName = 'ZeroMaster-Watchdog'
 Write-Host "Creating scheduled task '$taskName'..." -ForegroundColor Cyan
 
-# Delete existing if present
-$existing = schtasks /Query /TN $taskName 2>$null
-if ($LASTEXITCODE -eq 0) {
-    schtasks /Delete /TN $taskName /F | Out-Null
+# Delete existing if present (use Get-ScheduledTask to avoid schtasks stderr throwing under ErrorActionPreference=Stop)
+$taskExists = $false
+try {
+    $null = Get-ScheduledTask -TaskName $taskName -ErrorAction Stop
+    $taskExists = $true
+} catch {
+    $taskExists = $false
+}
+if ($taskExists) {
+    $null = & schtasks.exe /Delete /TN $taskName /F 2>&1
     Write-Host "  Removed existing task." -ForegroundColor Yellow
 }
 
 $cmd = "powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$scriptPath`""
-schtasks /Create `
+$null = & schtasks.exe /Create `
     /TN $taskName `
     /TR "$cmd" `
     /SC MINUTE /MO 5 `
     /RU SYSTEM `
     /RL HIGHEST `
-    /F | Out-Null
+    /F 2>&1
 
-if ($LASTEXITCODE -ne 0) { throw "Failed to create scheduled task." }
+if ($LASTEXITCODE -ne 0) { throw "Failed to create scheduled task (exit $LASTEXITCODE)." }
 Write-Host "  Task created: runs every 5 min as SYSTEM" -ForegroundColor Green
 
 # --- Trigger first run immediately ---
 Write-Host "Triggering first run..." -ForegroundColor Cyan
-schtasks /Run /TN $taskName | Out-Null
+$null = & schtasks.exe /Run /TN $taskName 2>&1
 Start-Sleep -Seconds 3
 
 # --- Summary ---
