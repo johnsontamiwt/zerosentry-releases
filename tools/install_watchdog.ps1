@@ -1,4 +1,4 @@
-﻿# ============================================================
+# ============================================================
 #  ZeroMaster Watchdog Installer
 #  Creates scheduled task "ZeroMaster-Watchdog" that runs
 #  health_check.ps1 every 5 min as SYSTEM.
