@@ -1,13 +1,13 @@
-# ============================================================
+﻿# ============================================================
 #  ZeroMaster Watchdog Installer
 #  Creates scheduled task "ZeroMaster-Watchdog" that runs
 #  health_check.ps1 every 5 min as SYSTEM.
 #
-#  PREREQUISITE — set Telegram credentials first (admin CMD):
+#  PREREQUISITE - set Telegram credentials first (admin CMD):
 #    setx TELEGRAM_BOT_TOKEN "123456:AAB...xyz"      /M
 #    setx TELEGRAM_CHAT_ID   "123456789"             /M
 #
-#  USAGE — run in PowerShell as Administrator:
+#  USAGE - run in PowerShell as Administrator:
 #    iwr -UseBasicParsing https://raw.githubusercontent.com/johnsontamiwt/zerosentry-releases/main/tools/install_watchdog.ps1 | iex
 # ============================================================
 

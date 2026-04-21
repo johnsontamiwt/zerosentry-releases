@@ -1,5 +1,5 @@
-# ============================================================
-#  ZeroMaster Watchdog — Health Check
+﻿# ============================================================
+#  ZeroMaster Watchdog - Health Check
 #  Runs every 5 min via scheduled task "ZeroMaster-Watchdog".
 #  Probes web UI; if unhealthy, captures forensics, kills orphan
 #  python.exe, restarts ZeroMaster task, and alerts via Telegram.
@@ -65,7 +65,7 @@ function Send-TelegramAlert($msg) {
     $token  = [Environment]::GetEnvironmentVariable('TELEGRAM_BOT_TOKEN', 'Machine')
     $chatId = [Environment]::GetEnvironmentVariable('TELEGRAM_CHAT_ID',  'Machine')
     if (-not $token -or -not $chatId) {
-        Write-WDLog "Telegram env vars not set — skipping alert: $msg"
+        Write-WDLog "Telegram env vars not set - skipping alert: $msg"
         return
     }
     try {
@@ -74,7 +74,7 @@ function Send-TelegramAlert($msg) {
             text       = $msg
             parse_mode = 'Markdown'
         } | ConvertTo-Json -Compress
-        # Force UTF-8 — PowerShell 5.x Invoke-RestMethod defaults to latin-1 for string bodies,
+        # Force UTF-8 - PowerShell 5.x Invoke-RestMethod defaults to latin-1 for string bodies,
         # which mangles emoji and non-ASCII. Converting to bytes preserves UTF-8.
         $bodyBytes = [System.Text.Encoding]::UTF8.GetBytes($bodyJson)
         Invoke-RestMethod `
@@ -175,7 +175,7 @@ if ($healthy) {
                 Write-WDLog "Recovery successful."
                 Send-TelegramAlert "✅ *ZeroMaster recovered* via auto-restart."
             } else {
-                Write-WDLog "Recovery FAILED — still unhealthy after restart."
+                Write-WDLog "Recovery FAILED - still unhealthy after restart."
                 Send-TelegramAlert "❌ *ZeroMaster still UNHEALTHY* after auto-restart.`n*Manual intervention needed.*"
             }
 
